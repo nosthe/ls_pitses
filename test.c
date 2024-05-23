@@ -33,7 +33,7 @@ int main(int argc, char* argv[]){
         int* a = malloc(sizeof(int));
         *a = i;
 
-        if(pthread_create(&pelatesThreads[i],NULL,&order,a)){
+        if(pthread_create(&pelatesThreads[i],NULL,&order,a)!=0){
             perror("den anoikse to thread ");
         }
     }
