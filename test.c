@@ -12,37 +12,88 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
+#include "pizza.h"
 
-int ARITHMOS_PELATWN=5;
+pthread_mutex_t mutexTel;
+pthread_cond_t condTel;
 
 void* order(void* arg){
+
     int orderID=*(int*)arg;
-    printf("pareigghla.. order: %d\n",orderID);
-    // edw 4 whiles me mutex aoy conditions? gia kathe stadio
     
+    
+    pthread_mutex_lock(&mutexTel);
+
+    while(thlefwnhtes<1){
+        printf("perimenw na vrw thlefwniti.. nima: %d\n",orderID);
+        pthread_cond_wait(&condTel,&mutexTel);
+        //vazei to thread na perimenei na akoysei signal kai eleytherwnei to mutex
+        //otan akoysei signal apto broadcast, to pairnei kapoio thread poy perimene,ksanakleidwnei kai proxwraei
+    }
+	
+    //apasxolei enan thlefwnhth( an ftasei edw to mutex einai locked hdh)
+	thlefwnhtes--;
+    pthread_mutex_unlock(&mutexTel);
+	
+
+    // edw arxizei h paraggelia
+	printf("parhggeila order: %d\n",orderID);
+	
+	
+	
+	sleep(1); // foo() paraggelias
+	
+	
+	//edw exei teleiwsei h paraggelia. apeleytherwnei ton thlefwnhth kai stelnei shma se ola ta threads na psaksoyn thlefwnhth
+	pthread_mutex_lock(&mutexTel);
+	thlefwnhtes++;
+	pthread_mutex_unlock(&mutexTel);
+	pthread_cond_broadcast(&condTel);//*
+
+	free(arg);
+	
+
 }
+
 
 int main(int argc, char* argv[]){
     
     
-    pthread_t pelatesThreads[ARITHMOS_PELATWN];
+    if(argc!=3 ){
+        printf("Den exeis dwsei swsta orismata, termatizw");
+        exit(1);
+    }
+
+    Ncust=atoi(argv[1]);
+    seed=atoi(argv[2]);
+
+    pthread_t pelatesThreads[Ncust];
+
+    pthread_mutex_init(&mutexTel,NULL);
+    pthread_cond_init(&condTel,NULL);
+    
+    
 
     //anoigei threads pelates pernaei to id sthn order
-    for(int i=1; i <= ARITHMOS_PELATWN; i++){
-
+    for(int i=1; i <= Ncust; i++){
+		
         int* a = malloc(sizeof(int));
         *a = i;
-
-        if(pthread_create(&pelatesThreads[i],NULL,&order,a)!=0){
+	
+        if(pthread_create(&pelatesThreads[i],NULL,&order,a)){
             perror("den anoikse to thread ");
         }
+        
     }
 
     //joins
-    for (int i = 1; i <=ARITHMOS_PELATWN; i++) {
+    for (int i = 1; i <=Ncust; i++) {
         if (pthread_join(pelatesThreads[i], NULL) != 0) {
             perror("den joinare to thread");
         }
     }
+
+    pthread_mutex_destroy(&mutexTel);
+    pthread_cond_destroy(&condTel);
 
 }
